@@ -17,7 +17,7 @@ MALE_KEYWORDS = {
     # Deutsche Vornamen (männlich)
     'hans', 'peter', 'johannes', 'jakob', 'friedrich', 'georg', 'wilhelm',
     'ernst', 'heinrich', 'karl', 'kurt', 'otto', 'franz', 'josef', 'paul',
-    'martin', 'thomas', 'ludwig', 'franz', 'rudolf', 'theodor',
+    'martin', 'thomas', 'ludwig', 'franz', 'rudolf', 'theodor', 'Frizz',
 }
 
 FEMALE_KEYWORDS = {
@@ -35,7 +35,7 @@ FEMALE_KEYWORDS = {
     'ida', 'rosa', 'bertha', 'louise', 'käthe', 'martha',
     'helene', 'pauline', 'caroline', 'josephine', 'christine', 'margarete',
     'barbara', 'helena', 'angela', 'brunhilde', 'gerda', 'ingrid', 'dora',
-    'meret', 'gretel', 'emilie', 'julia', 'trudi', 'urbana',
+    'meret', 'gretel', 'emilie', 'julia', 'trudi', 'urbana', 'Dora', 
     # Endungen (mindestens 4 Buchstaben für sicheres Matching)
     '-erin',
 }
@@ -83,14 +83,18 @@ PROFESSIONS = {
     },
     'militär': {
         'general', 'oberst', 'major', 'hauptmann', 'leutnant', 'soldat',
-        'kriegrat', 'feldherr', 'festung', 'krieg', 'fort',
+        'kriegrat', 'feldherr', 'festung', 'krieg', 'fort', 'Stadtbefestigung', 
     },
-    'geografie': {
+    'Ortschaft': {
         'basel', 'bern', 'zürich', 'luzern', 'st.gallen', 'appenzell',
         'wallis', 'graubünden', 'tessin', 'jura', 'fribourg',
         'biel', 'solothurn', 'aarau', 'liestal', 'bellinzona',
         'deutsches', 'belgien', 'holland', 'frankreich', 'italien',
-        'schwarzwald', 'vogesen', 'jura', 'alpen',
+        'schwarzwald', 'vogesen', 'jura', 'alpen', 'berg', 'tal', 'wiese',
+ },
+    'Geografie': {
+         'vogesen', 'jura', 'alpen', 'berg', 'tal', 'wiese',
+    
     },
     'gebäude': {
         'schloss', 'burg', 'festung', 'turm', 'brücke', 'rathaus',
@@ -131,8 +135,8 @@ PROFESSIONS = {
         'eiche', 'eich', 'linde', 'birke', 'erle', 'erlen',
         'tanne', 'buche', 'kastanie', 'ahorn', 'ulme',
         'rose', 'weide', 'busch',
-        'rebe', 'wein',
-        'baum', 'wald', 'gras',
+        'rebe', 'wein', 'Baum', 'Pflanze'
+        'baum', 'wald', 'gras', 'wiese', 'feld', 'garten',
     },
     'gewässer': {
         # Flüsse in Basel
