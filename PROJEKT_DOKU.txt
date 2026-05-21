@@ -2,7 +2,7 @@
   STREETLORE BASEL - KLASSIFIZIERUNGS-PIPELINE
 ==============================================================================
 
-Map + Fun Facts zu allen Strassen von Basel
+Maps + Fun Facts zu allen Strassen von Basel
 Datenquelle: data.bs.ch Dataset 100189 (Strassennamen Basel-Stadt)
 
 
