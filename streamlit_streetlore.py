@@ -13,6 +13,17 @@ st.set_page_config(
 # logo
 st.logo("data/logo_streetlore.png")
 
+st.markdown(
+    """
+    <style>
+    [alt=Logo] {
+        height: 4.5rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # title and description
 st.title("StreetLore Basel - Die Geschichte hinter jedem Strassenschild")
 st.write("""Wer war Elisabethen? Woher kommt der Name Spalentor?
