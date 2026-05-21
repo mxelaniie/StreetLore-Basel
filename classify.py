@@ -121,6 +121,26 @@ PROFESSIONS = {
         # Zeitliche Marker
         'antike', 'römisch', 'helvetier', 'kelten',
     },
+    'tiere': {
+        'wolf', 'hirsch', 'fuchs', 'löwe',
+        'eichhorn', 'wild', 'pferd', 'ross', 'hund',
+        'vogel', 'adler', 'falke', 'ente',
+        'fisch', 'forelle',
+    },
+    'pflanzen': {
+        'eiche', 'eich', 'linde', 'birke', 'erle', 'erlen',
+        'tanne', 'buche', 'kastanie', 'ahorn', 'ulme',
+        'rose', 'weide', 'busch',
+        'rebe', 'wein',
+        'baum', 'wald', 'gras',
+    },
+    'gewässer': {
+        # Flüsse in Basel
+        'rhein', 'birs', 'birsig', 'wiese',
+
+        'bach', 'fluss', 'teich', 'quelle', 'brunnen',
+        'wasser', 'zufluss',
+    },
 }
 
 def _count_keyword_matches(keywords: set, text: str) -> int:
