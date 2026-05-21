@@ -9,3 +9,8 @@ Keywords / Bibliothek männlich, weiblich / Klassifizieren - Kelan und Jimmy
 CSV aufbereiten und einlesen / folium - Melanie
 
 CSV aktuell herunterladen - Jimmy
+
+# TODO
+Score, wie sicher die Klassifizierung stimmt
+
+Bolgbeitrag bis nächste Woche Mittwoch
