@@ -49,7 +49,7 @@ if control_button == "Statistik":
  # map
 else:
     st.subheader("Entdecke die Geschichten hinter den Strassennamen auf der Karte")
-    with open("data/streetlore_map.html", "r", encoding="utf-8") as f:
+    with open("data/streetlore_gender_map.html", "r", encoding="utf-8") as f:
         karte_html = f.read()
     components.html(karte_html, height=600, scrolling=True)
     
