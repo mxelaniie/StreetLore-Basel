@@ -10,6 +10,40 @@ from html import escape
 import folium
 from classify import classify_epoch, classify_profession, classify_gender
 
+# Farbschema
+FARBEN_GESCHLECHT = {
+    'männlich':  '#3182bd',   # Blau
+    'weiblich':  '#e377c2',   # Rosa
+    'unbekannt': '#969696',   # Grau
+}
+
+FARBEN_BERUFSGRUPPE = {
+    'wissenschaft': '#3B82F6',
+    'kunst':        '#F59E0B',
+    'handwerk':     '#B45309',
+    'handel':       '#8B5CF6',
+    'religion':     '#EC4899',
+    'politik':      '#DC2626',
+    'adel':         '#06B6D4',
+    'militär':      '#374151',
+    'geografie':    '#16A34A',
+    'pflanzen':     '#22C55E',
+    'tiere':        '#A16207',
+    'gewässer':     '#0EA5E9',
+    'gebäude':      '#78716C',
+    'epoche':       '#14B8A6',
+    'Sonstiges':    '#9CA3AF',
+}
+FARBEN_EPOCHEN = {
+    "antike": "#8B5CF6",
+    "mittelalter": "#B45309",
+    "renaissance": "#F59E0B",
+    "barock": "#EC4899",
+    "klassizismus": "#3B82F6",
+    "19. Jahrhundert": "#16A34A",
+    "moderne": "#DC2626",
+    "keine Angabe": "#9CA3AF"
+}
 #website configuration
 st.set_page_config(
     page_title="StreetLore Basel",
@@ -146,7 +180,19 @@ def build_street_map(
     df_all: pd.DataFrame,
     df_filtered: pd.DataFrame,
     filters_are_active: bool,
+    farb_modus: str = "geschlecht",
 ) -> folium.Map:
+    
+    # Farbschema wählen
+    if farb_modus == "geschlecht":
+        farb_zuordnung = FARBEN_GESCHLECHT
+        farb_spalte = "Geschlecht"
+    elif farb_modus == "epoche":
+        farb_zuordnung = FARBEN_EPOCHEN
+        farb_spalte = "Epoche"
+    else:
+        farb_zuordnung = FARBEN_BERUFSGRUPPE
+        farb_spalte = "Berufsgruppe"
     
     center_lat, center_lon = _get_map_center(df_all)
 
@@ -165,13 +211,15 @@ def build_street_map(
             continue
 
         is_match = row_id in filtered_ids
+        kategorie = str(row.get(farb_spalte, "")).lower() 
+        base_color = farb_zuordnung.get(kategorie, "#999999")
 
         if filters_are_active:
-            color = "#0066ff" if is_match else "#bdbdbd"
+            color = base_color if is_match else "#bdbdbd"
             weight = 5 if is_match else 1.5
             opacity = 0.95 if is_match else 0.25
         else:
-            color = "#0066ff"
+            color = base_color
             weight = 3
             opacity = 0.75
 
@@ -276,6 +324,13 @@ filters_are_active = has_active_filters(
     selected_epochen=selected_epochen,
 )
 
+if selected_geschlecht and not selected_berufsgruppe and not selected_epochen:
+    farb_modus = "geschlecht"
+elif selected_epochen and not selected_geschlecht and not selected_berufsgruppe:
+    farb_modus = "epoche"
+else:
+    farb_modus = "berufsgruppe"
+
 
 #dual button
 control_button = st.segmented_control("", ["Karte", "Statistik"], default="Karte")
@@ -324,6 +379,7 @@ else:
         df_all=df,
         df_filtered=filtered_df,
         filters_are_active=filters_are_active,
+        farb_modus=farb_modus
     )
     components.html(street_map._repr_html_(), height=650, scrolling=False)
 
