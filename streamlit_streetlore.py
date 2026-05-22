@@ -409,7 +409,8 @@ st.markdown("""
         }
     </style>
     <div class="footer">
-        © 2026 StreetLore Basel · Daten: Kanton Basel-Stadt · 
+        © 2026 StreetLore Basel · 
+        Daten: <a href="https://data.bs.ch/explore/dataset/100189" target="_blank">Kanton Basel-Stadt</a> · 
         Erstellt von Best Hääckers · 
         <a href="mailto:kontakt@streetlore.ch">Kontakt</a>
     </div>
