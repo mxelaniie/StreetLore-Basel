@@ -51,7 +51,6 @@ PROFESSION_COLORS = {
     "Tiere": "#A16207",
     "Gewässer": "#0EA5E9",
     "Gebäude": "#78716C",
-    "Epoche": "#14B8A6",
     "Sonstiges": "#9CA3AF",
 }
 
