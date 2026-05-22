@@ -222,32 +222,22 @@ def load_data_from_notebook(notebook_mtime_ns: int) -> pd.DataFrame:
 
 
 #change coordinates from json to tuples
-def _geo_shape_to_lines(geo_shape: object) -> list[list[tuple[float, float]]]:
-    if geo_shape is None or pd.isna(geo_shape):
+def _geo_shape_to_lines(geo_shape):
+    if geo_shape is None or not hasattr(geo_shape, "geom_type") or geo_shape.is_empty:
         return []
 
-    if isinstance(geo_shape, dict):
-        geometry = geo_shape
-    else:
-        try:
-            geometry = json.loads(str(geo_shape))
-        except (TypeError, json.JSONDecodeError):
-            return []
+    geometries = (
+        [geo_shape]
+        if geo_shape.geom_type == "LineString"
+        else geo_shape.geoms
+        if geo_shape.geom_type == "MultiLineString"
+        else []
+    )
 
-    geometry_type = geometry.get("type")
-    coordinates = geometry.get("coordinates", [])
-
-    if geometry_type == "LineString":
-        return [[(lat, lon) for lon, lat in coordinates]]
-
-    if geometry_type == "MultiLineString":
-        return [
-            [(lat, lon) for lon, lat in line]
-            for line in coordinates
-            if line
-        ]
-
-    return []
+    return [
+        [(lat, lon) for lon, lat in line.coords]
+        for line in geometries
+    ]
 
 
 
