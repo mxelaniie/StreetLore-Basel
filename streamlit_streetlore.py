@@ -317,31 +317,46 @@ def apply_filters(
 
 # sidebar and filters
 with st.sidebar:
-    st.subheader("Filter")
+    control_button = st.segmented_control("", ["Karte", "Statistik"], default="Karte")
+    
+    if control_button == "Karte":
+        st.subheader("Filter")
 
-    geschlecht_options = sorted(df["Geschlecht"].dropna().unique())
-    berufsgruppe_options = sorted(df["Berufsgruppe"].dropna().unique())
-    epochen_options = sorted(df["Epoche"].dropna().unique())
+        geschlecht_options = sorted(df["Geschlecht"].dropna().unique())
+        berufsgruppe_options = sorted(df["Berufsgruppe"].dropna().unique())
+        epochen_options = sorted(df["Epoche"].dropna().unique())
 
-    selected_geschlecht = st.multiselect(
-        "Geschlecht",
-        options=geschlecht_options,
-        key="geschlecht",
-    )
+        selected_geschlecht = st.multiselect(
+            "Geschlecht",
+            options=geschlecht_options,
+            key="geschlecht",
+     )
 
-    selected_berufsgruppe = st.multiselect(
-        "Berufsgruppe / Kategorie",
-        options=berufsgruppe_options,
-        key="berufsgruppe",
-    )
+        selected_berufsgruppe = st.multiselect(
+            "Berufsgruppe / Kategorie",
+            options=berufsgruppe_options,
+            key="berufsgruppe",
+        )
 
-    selected_epochen = st.multiselect(
-        "Epochen",
-        options=epochen_options,
-        key="epochen",
-    )
+        selected_epochen = st.multiselect(
+            "Epochen",
+            options=epochen_options,
+            key="epochen",
+        )
 
-    st.button("Filter zurücksetzen", on_click=reset_filters)
+        st.button("Filter zurücksetzen", on_click=reset_filters)
+    
+    else:
+        selected_geschlecht = []
+        selected_berufsgruppe = []
+        selected_epochen = []
+
+        st.subheader("Statistik auswählen")
+        show_geschlecht = st.checkbox("Geschlecht", value=False)
+        show_berufsgruppe = st.checkbox("Berufsgruppe", value=False)
+        show_epochen = st.checkbox("Epochen", value=False)
+
+
 
 filtered_df = apply_filters(
     df=df,
@@ -354,33 +369,32 @@ filters_are_active = bool(
     selected_geschlecht or selected_berufsgruppe or selected_epochen
 )
 
-#dual button
-control_button = st.segmented_control("", ["Karte", "Statistik"], default="Karte")
 
 st.caption(f"Anzahl Strassen nach aktuellem Filter: {len(filtered_df)} von {len(df)}")
 
 #stats
 if control_button == "Statistik":
-    st.subheader("Verteilung der Strassennamen nach Geschlecht")
-    statistik_Geschlecht = df["Geschlecht"].value_counts().reset_index(name="Anzahl")
-    st.bar_chart(statistik_Geschlecht, x="Geschlecht", y="Anzahl", color= "#46bd31")
+    if show_geschlecht:
+        st.subheader("Verteilung der Strassennamen nach Geschlecht")
+        statistik_Geschlecht = df["Geschlecht"].value_counts().reset_index(name="Anzahl")
+        st.bar_chart(statistik_Geschlecht, x="Geschlecht", y="Anzahl", color= "#46bd31")
 
-    st.subheader("Verteilung der Strassennamen nach Berufsgruppe / Kategorie")
-    statistik_Berufsgruppe = df["Berufsgruppe"].value_counts().reset_index(name="Anzahl")
-    st.bar_chart(statistik_Berufsgruppe, x="Berufsgruppe", y="Anzahl", color="#824B9D")
+    if show_berufsgruppe:
+        st.subheader("Verteilung der Strassennamen nach Berufsgruppe / Kategorie")
+        statistik_Berufsgruppe = df["Berufsgruppe"].value_counts().reset_index(name="Anzahl")
+        st.bar_chart(statistik_Berufsgruppe, x="Berufsgruppe", y="Anzahl", color="#824B9D")
 
-    st.subheader("Verteilung der Strassennamen nach Epochen")
-    statistik_Epochen = df["Epoche"].value_counts().reset_index(name="Anzahl")
-    st.bar_chart(statistik_Epochen, x="Epoche", y="Anzahl", color="#6A65D3")
+    if show_epochen:
+        st.subheader("Verteilung der Strassennamen nach Epochen")
+        statistik_Epochen = df["Epoche"].value_counts().reset_index(name="Anzahl")
+        st.bar_chart(statistik_Epochen, x="Epoche", y="Anzahl", color="#6A65D3")
 #map
 else:
     st.subheader("Entdecke die Geschichten hinter den Strassennamen auf der Karte")
-
     street_map = build_street_map(
     df_map=filtered_df,
     color_dimension=get_color_dimension(),
-)
-
+    )
     components.html(street_map._repr_html_(), height=650, scrolling=False)
 #footer
 st.markdown("""
