@@ -364,55 +364,17 @@ st.caption(f"Anzahl Strassen nach aktuellem Filter: {len(filtered_df)} von {len(
 
 #stats
 if control_button == "Statistik":
-    st.subheader("Verteilung der Strassennamen nach Berufsgruppen / Kategorien")
+    st.subheader("Verteilung der Strassennamen nach Geschlecht")
+    statistik_Geschlecht = df["Geschlecht"].value_counts().reset_index(name="Anzahl")
+    st.bar_chart(statistik_Geschlecht, x="Geschlecht", y="Anzahl", color= "#46bd31")
 
-    statistik_df = (
-        filtered_df["Berufsgruppe"]
-        .value_counts()
-        .reset_index()
-    )
-    statistik_df.columns = ["Berufsgruppe", "Anzahl"]
+    st.subheader("Verteilung der Strassennamen nach Berufsgruppe / Kategorie")
+    statistik_Berufsgruppe = df["Berufsgruppe"].value_counts().reset_index(name="Anzahl")
+    st.bar_chart(statistik_Berufsgruppe, x="Berufsgruppe", y="Anzahl", color="#824B9D")
 
-    if statistik_df.empty:
-        st.info("Für die aktuelle Filterauswahl gibt es keine Treffer.")
-    else:
-        chart = (
-            alt.Chart(statistik_df)
-            .mark_bar()
-            .encode(
-                x=alt.X("Berufsgruppe:N", sort="-y", title="Berufsgruppe"),
-                y=alt.Y("Anzahl:Q", title="Anzahl"),
-                color=alt.Color(
-                    "Berufsgruppe:N",
-                    scale=alt.Scale(
-                        domain=list(PROFESSION_COLORS.keys()),
-                        range=list(PROFESSION_COLORS.values()),
-                    ),
-                    legend=None,
-                ),
-                tooltip=["Berufsgruppe", "Anzahl"],
-            )
-        )
-        st.altair_chart(chart, use_container_width=True)
-
-    st.subheader("Gefilterte Daten")
-
-    display_columns = [
-        col
-        for col in [
-            "Strassenname",
-            "Geschlecht",
-            "Berufsgruppe",
-            "Epoche",
-            "Erklärung_komplett",
-            "Erstmals erwähnt",
-            "Amtlich benannt",
-        ]
-        if col in filtered_df.columns
-    ]
-
-    st.dataframe(filtered_df[display_columns], use_container_width=True)
-
+    st.subheader("Verteilung der Strassennamen nach Epochen")
+    statistik_Epochen = df["Epoche"].value_counts().reset_index(name="Anzahl")
+    st.bar_chart(statistik_Epochen, x="Epoche", y="Anzahl", color="#6A65D3")
 #map
 else:
     st.subheader("Entdecke die Geschichten hinter den Strassennamen auf der Karte")
