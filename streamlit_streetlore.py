@@ -266,7 +266,7 @@ def build_street_map(df_map: pd.DataFrame, color_dimension: str) -> folium.Map:
 
 # title and description
 st.title("StreetLore Basel - Die Geschichte hinter jedem Strassenschild")
-st.write("""Wer war August? Woher kommt der Name Batterieweglein?
+st.write("""Wer war Friedrich? Woher kommt der Name Batterieweglein?
          Basel erzählt seine Geschichte auf jedem Strassenschild, man muss nur genauer hinschauen. 
          StreetLore Basel macht diese versteckten Geschichten sichtbar: Erkunde auf einer interaktiven Karte, 
          nach wem und was Basels Strassen benannt sind, entdecke Muster zwischen Quartieren und tauche ein in die Geschichte deiner Stadt.""")
