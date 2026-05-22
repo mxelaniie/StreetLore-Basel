@@ -7,8 +7,6 @@ import json
 import os
 from html import escape
 import folium
-from folium import Element
-import altair as alt
 
 #website configuration
 st.set_page_config(
@@ -39,43 +37,39 @@ GENDER_COLORS = {
 }
 
 PROFESSION_COLORS = {
-    "wissenschaft": "#3B82F6",
-    "kunst": "#F59E0B",
-    "handwerk": "#B45309",
-    "handel": "#8B5CF6",
-    "religion": "#EC4899",
-    "politik": "#DC2626",
-    "adel": "#06B6D4",
-    "militär": "#374151",
-    "geografie": "#16A34A",
-    "pflanzen": "#22C55E",
-    "tiere": "#A16207",
-    "gewässer": "#0EA5E9",
-    "gebäude": "#78716C",
-    "epoche": "#14B8A6",
-    "sonstiges": "#9CA3AF",
-    "sonstiges": "#9CA3AF",
+    "Wissenschaft": "#3B82F6",
+    "Kunst": "#F59E0B",
+    "Handwerk": "#B45309",
+    "Handel": "#8B5CF6",
+    "Religion": "#EC4899",
+    "Politik": "#DC2626",
+    "Adel": "#06B6D4",
+    "Militär": "#374151",
+    "Geografie": "#02752C",
+    "Ortschaft": "#07F8A8",
+    "Pflanzen": "#2DFD04",
+    "Tiere": "#A16207",
+    "Gewässer": "#0EA5E9",
+    "Gebäude": "#78716C",
+    "Epoche": "#14B8A6",
+    "Sonstiges": "#9CA3AF",
 }
 
 EPOCH_COLORS = {
-    "antike": "#8B5CF6",
-    "mittelalter": "#B45309",
-    "renaissance": "#F59E0B",
-    "barock": "#EC4899",
-    "klassizismus": "#3B82F6",
+    "Antike": "#8B5CF6",
+    "Mittelalter": "#B45309",
+    "Renaissance": "#F59E0B",
+    "Barock": "#EC4899",
+    "Klassizismus": "#3B82F6",
     "19. Jahrhundert": "#16A34A",
     "Moderne": "#DC2626",
     "keine Angabe": "#9CA3AF",
 }
 
-DEFAULT_STREET_COLOR = "#3B82F6"
-INACTIVE_STREET_COLOR = "#D1D5DB"
 UNKNOWN_STREET_COLOR = "#9CA3AF"
 
-
 def get_color(value, color_dict, default=UNKNOWN_STREET_COLOR):
-    return color_dict.get(str(value).strip().lower(), default)
-
+    return color_dict.get(str(value).strip(), default)
 
 def get_color_dimension() -> str:
     if selected_berufsgruppe:
@@ -87,7 +81,6 @@ def get_color_dimension() -> str:
     else:
         return "Berufsgruppe"
 
-
 def get_street_color(row: pd.Series, color_dimension: str) -> str:
     if color_dimension == "Geschlecht":
         return get_color(row["Geschlecht"], GENDER_COLORS)
@@ -95,7 +88,7 @@ def get_street_color(row: pd.Series, color_dimension: str) -> str:
     if color_dimension == "Epoche":
         return get_color(row["Epoche"], EPOCH_COLORS)
 
-    return get_color(row["Berufsgruppe"], PROFESSION_COLORS, DEFAULT_STREET_COLOR)
+    return get_color(row["Berufsgruppe"], PROFESSION_COLORS)
 
 def _legend_section(title: str, color_mapping: dict[str, str]) -> str:
     items = "".join(
@@ -111,7 +104,6 @@ def _legend_section(title: str, color_mapping: dict[str, str]) -> str:
     {items}
     <br>
     """
-
 
 def add_map_legend(street_map: folium.Map) -> None:
     legend = f"""
@@ -142,7 +134,7 @@ def add_map_legend(street_map: folium.Map) -> None:
 
 def add_north_arrow(street_map: folium.Map) -> None:
     """Fügt den Nordpfeil aus dem Notebook zur Folium-Karte hinzu."""
-    street_map.get_root().html.add_child(Element("""
+    street_map.get_root().html.add_child(folium.Element("""
     <div style="
         position: fixed;
         top: 80px;
@@ -165,12 +157,9 @@ def add_north_arrow(street_map: folium.Map) -> None:
 APP_DIR = Path(__file__).resolve().parent
 NOTEBOOK_PATH = APP_DIR / "StreetLore_Aufbereitung.ipynb"
 
-
 @st.cache_data(show_spinner="Daten werden aus dem Notebook aktualisiert ...")
 def load_data_from_notebook(notebook_mtime_ns: int) -> pd.DataFrame:
-    
     notebook = json.loads(NOTEBOOK_PATH.read_text(encoding="utf-8"))
-
     namespace: dict[str, object] = {
         "__name__": "__streetlore_notebook_loader__",
         "__file__": str(NOTEBOOK_PATH),
@@ -194,7 +183,6 @@ def load_data_from_notebook(notebook_mtime_ns: int) -> pd.DataFrame:
                 compile(source, f"{NOTEBOOK_PATH.name}:cell_{cell_number}", "exec"),
                 namespace,
             )
-
            
             if "data.to_csv" in source:
                 break
@@ -220,7 +208,6 @@ def load_data_from_notebook(notebook_mtime_ns: int) -> pd.DataFrame:
 
     return df
 
-
 #change coordinates from json to tuples
 def _geo_shape_to_lines(geo_shape):
     if geo_shape is None or not hasattr(geo_shape, "geom_type") or geo_shape.is_empty:
@@ -239,10 +226,7 @@ def _geo_shape_to_lines(geo_shape):
         for line in geometries
     ]
 
-
-
 #folium map
-
 def build_street_map(df_map: pd.DataFrame, color_dimension: str) -> folium.Map:
     street_map = folium.Map(
         location=[47.5556, 7.6154],
@@ -288,15 +272,12 @@ def build_street_map(df_map: pd.DataFrame, color_dimension: str) -> folium.Map:
 
     return street_map
 
-
-
 # title and description
 st.title("StreetLore Basel - Die Geschichte hinter jedem Strassenschild")
-st.write("""Wer war Elisabethen? Woher kommt der Name Spalentor?
+st.write("""Wer war Friedrich? Woher kommt der Name Spalentor?
          Basel erzählt seine Geschichte auf jedem Strassenschild, man muss nur genauer hinschauen. 
          StreetLore Basel macht diese versteckten Geschichten sichtbar: Erkunde auf einer interaktiven Karte, 
          nach wem und was Basels Strassen benannt sind, entdecke Muster zwischen Quartieren und tauche ein in die Geschichte deiner Stadt.""")
-
 
 #data loading
 df = load_data_from_notebook(NOTEBOOK_PATH.stat().st_mtime_ns)
@@ -305,7 +286,6 @@ def reset_filters() -> None:
     st.session_state["geschlecht"] = []
     st.session_state["berufsgruppe"] = []
     st.session_state["epochen"] = []
-
 
 def apply_filters(
     df: pd.DataFrame,
@@ -327,8 +307,6 @@ def apply_filters(
 
     return filtered_df
 
-
-
 # sidebar and filters
 with st.sidebar:
     control_button = st.segmented_control("", ["Karte", "Statistik"], default="Karte")
@@ -344,7 +322,7 @@ with st.sidebar:
             "Geschlecht",
             options=geschlecht_options,
             key="geschlecht",
-     )
+        )
 
         selected_berufsgruppe = st.multiselect(
             "Berufsgruppe / Kategorie",
@@ -375,10 +353,6 @@ filtered_df = apply_filters(
     selected_geschlecht=selected_geschlecht,
     selected_berufsgruppe=selected_berufsgruppe,
     selected_epochen=selected_epochen,
-)
-
-filters_are_active = bool(
-    selected_geschlecht or selected_berufsgruppe or selected_epochen
 )
 
 #stats
@@ -429,4 +403,3 @@ st.markdown("""
         <a href="mailto:kontakt@streetlore.ch">Kontakt</a>
     </div>
 """, unsafe_allow_html=True)
-    
