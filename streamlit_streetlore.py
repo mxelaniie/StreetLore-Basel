@@ -356,8 +356,6 @@ with st.sidebar:
         show_berufsgruppe = st.checkbox("Berufsgruppe", value=False)
         show_epochen = st.checkbox("Epochen", value=False)
 
-
-
 filtered_df = apply_filters(
     df=df,
     selected_geschlecht=selected_geschlecht,
@@ -368,9 +366,6 @@ filtered_df = apply_filters(
 filters_are_active = bool(
     selected_geschlecht or selected_berufsgruppe or selected_epochen
 )
-
-
-st.caption(f"Anzahl Strassen nach aktuellem Filter: {len(filtered_df)} von {len(df)}")
 
 #stats
 if control_button == "Statistik":
@@ -391,11 +386,13 @@ if control_button == "Statistik":
 #map
 else:
     st.subheader("Entdecke die Geschichten hinter den Strassennamen auf der Karte")
+    st.caption(f"Anzahl Strassen nach aktuellem Filter: {len(filtered_df)} von {len(df)}")
     street_map = build_street_map(
     df_map=filtered_df,
     color_dimension=get_color_dimension(),
     )
     components.html(street_map._repr_html_(), height=650, scrolling=False)
+    
 #footer
 st.markdown("""
     <style>
