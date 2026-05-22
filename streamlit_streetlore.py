@@ -206,11 +206,13 @@ def load_data_from_notebook(notebook_mtime_ns: int) -> pd.DataFrame:
 
     # rename_columns
     rename_columns = {
-        "geschlecht": "Geschlecht",
-        "berufsgruppe": "Berufsgruppe",
-        "epoche": "Epoche",
-        "erklaerung_komplett": "Erklärung_komplett",
-    }
+    "geschlecht": "Geschlecht",
+    "berufsgruppe": "Berufsgruppe",
+    "epoche": "Epoche",
+    "erklaerung_komplett": "Erklärung_komplett",
+    "geo_shape": "Geo Shape",
+    "geo_point": "Geo Point",
+}
 
     df = df.rename(
         columns={old: new for old, new in rename_columns.items() if old in df.columns}
@@ -220,30 +222,23 @@ def load_data_from_notebook(notebook_mtime_ns: int) -> pd.DataFrame:
 
 
 #change coordinates from json to tuples
-def _geo_shape_to_lines(geo_shape: object) -> list[list[tuple[float, float]]]:
-    
-    if pd.isna(geo_shape):
+def _geo_shape_to_lines(geo_shape):
+    if geo_shape is None or not hasattr(geo_shape, "geom_type") or geo_shape.is_empty:
         return []
 
-    try:
-        geometry = json.loads(str(geo_shape))
-    except (TypeError, json.JSONDecodeError):
-        return []
+    geometries = (
+        [geo_shape]
+        if geo_shape.geom_type == "LineString"
+        else geo_shape.geoms
+        if geo_shape.geom_type == "MultiLineString"
+        else []
+    )
 
-    geometry_type = geometry.get("type")
-    coordinates = geometry.get("coordinates", [])
+    return [
+        [(lat, lon) for lon, lat in line.coords]
+        for line in geometries
+    ]
 
-    if geometry_type == "LineString":
-        return [[(lat, lon) for lon, lat in coordinates]]
-
-    if geometry_type == "MultiLineString":
-        return [
-            [(lat, lon) for lon, lat in line]
-            for line in coordinates
-            if line
-        ]
-
-    return []
 
 
 #folium map
@@ -278,6 +273,8 @@ def build_street_map(df_map: pd.DataFrame, color_dimension: str) -> folium.Map:
     add_north_arrow(street_map)
 
     return street_map
+
+
 
 # title and description
 st.title("StreetLore Basel - Die Geschichte hinter jedem Strassenschild")
@@ -380,9 +377,9 @@ else:
     st.subheader("Entdecke die Geschichten hinter den Strassennamen auf der Karte")
 
     street_map = build_street_map(
-        df_map=filtered_df,
-        color_dimension=get_color_dimension(),
-    )
+    df_map=filtered_df,
+    color_dimension=get_color_dimension(),
+)
 
     components.html(street_map._repr_html_(), height=650, scrolling=False)
 #footer
