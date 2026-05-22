@@ -1,7 +1,6 @@
 #import modules
 import streamlit as st
 import pandas as pd
-import numpy as np
 import streamlit.components.v1 as components
 from pathlib import Path
 import json
@@ -32,7 +31,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Farbschema
+# Definition Farbschema
 GENDER_COLORS = {
     "männlich": "#3182bd",
     "weiblich": "#e377c2",
@@ -55,15 +54,15 @@ PROFESSION_COLORS = {
     "gebäude": "#78716C",
     "epoche": "#14B8A6",
     "sonstiges": "#9CA3AF",
-    "Sonstiges": "#9CA3AF",
+    "sonstiges": "#9CA3AF",
 }
 
 EPOCH_COLORS = {
-    "Antike": "#8B5CF6",
-    "Mittelalter": "#B45309",
-    "Renaissance": "#F59E0B",
-    "Barock": "#EC4899",
-    "Klassizismus": "#3B82F6",
+    "antike": "#8B5CF6",
+    "mittelalter": "#B45309",
+    "renaissance": "#F59E0B",
+    "barock": "#EC4899",
+    "klassizismus": "#3B82F6",
     "19. Jahrhundert": "#16A34A",
     "Moderne": "#DC2626",
     "keine Angabe": "#9CA3AF",
@@ -74,43 +73,31 @@ INACTIVE_STREET_COLOR = "#D1D5DB"
 UNKNOWN_STREET_COLOR = "#9CA3AF"
 
 
-def _normalize_category(value: object) -> str:
-    return str(value).strip().lower() if pd.notna(value) else ""
+def get_color(value, color_dict, default=UNKNOWN_STREET_COLOR):
+    return color_dict.get(str(value).strip().lower(), default)
 
 
-def _lookup_color(value: object, color_mapping: dict[str, str], default: str = UNKNOWN_STREET_COLOR) -> str:
-    value_as_text = str(value).strip() if pd.notna(value) else ""
-    if value_as_text in color_mapping:
-        return color_mapping[value_as_text]
-
-    normalized_mapping = {str(key).strip().lower(): color for key, color in color_mapping.items()}
-    return normalized_mapping.get(value_as_text.lower(), default)
-
-
-def _active_color_dimension(
-    selected_geschlecht: list[str],
-    selected_berufsgruppe: list[str],
-    selected_epochen: list[str],
-) -> str:
-    """Bestimmt, nach welcher Dimension die Karte eingefärbt wird."""
+def get_color_dimension() -> str:
     if selected_berufsgruppe:
         return "Berufsgruppe"
-    if selected_epochen:
+    elif selected_epochen:
         return "Epoche"
-    if selected_geschlecht:
+    elif selected_geschlecht:
         return "Geschlecht"
-    return "Berufsgruppe"
+    else:
+        return "Berufsgruppe"
 
 
-def _color_for_row(row: pd.Series, color_dimension: str) -> str:
+def get_street_color(row: pd.Series, color_dimension: str) -> str:
     if color_dimension == "Geschlecht":
-        return _lookup_color(row.get("Geschlecht"), GENDER_COLORS)
+        return get_color(row["Geschlecht"], GENDER_COLORS)
+
     if color_dimension == "Epoche":
-        return _lookup_color(row.get("Epoche"), EPOCH_COLORS)
-    return _lookup_color(row.get("Berufsgruppe"), PROFESSION_COLORS, DEFAULT_STREET_COLOR)
+        return get_color(row["Epoche"], EPOCH_COLORS)
 
+    return get_color(row["Berufsgruppe"], PROFESSION_COLORS, DEFAULT_STREET_COLOR)
 
-def _legend_html(title: str, color_mapping: dict[str, str]) -> str:
+def _legend_section(title: str, color_mapping: dict[str, str]) -> str:
     items = "".join(
         f"""
         <i class="fa fa-circle" style="color:{color}"></i>
@@ -120,11 +107,21 @@ def _legend_html(title: str, color_mapping: dict[str, str]) -> str:
     )
 
     return f"""
+    <b>{escape(title)}</b><br>
+    {items}
+    <br>
+    """
+
+
+def add_map_legend(street_map: folium.Map) -> None:
+    legend = f"""
     <div style="
         position: fixed;
         bottom: 50px;
         right: 50px;
-        width: 220px;
+        width: 260px;
+        max-height: 420px;
+        overflow-y: auto;
         padding: 10px;
         border: 2px solid grey;
         border-radius: 8px;
@@ -134,54 +131,14 @@ def _legend_html(title: str, color_mapping: dict[str, str]) -> str:
         opacity: 0.9;
         line-height: 1.6;
     ">
-        &nbsp;<b>{escape(title)}</b><br><br>
-        {items}
+        <b>Legende</b><br><br>
+        {_legend_section("Geschlecht", GENDER_COLORS)}
+        {_legend_section("Berufsgruppe / Kategorie", PROFESSION_COLORS)}
+        {_legend_section("Epoche", EPOCH_COLORS)}
     </div>
     """
-
-
-def add_map_legend(street_map: folium.Map, color_dimension: str) -> None:
-    if color_dimension == "Geschlecht":
-        legend = _legend_html("Legende – Geschlecht", GENDER_COLORS)
-    elif color_dimension == "Epoche":
-        legend = _legend_html("Legende – Epochen", EPOCH_COLORS)
-    else:
-        legend = _legend_html("Legende", PROFESSION_COLORS)
-
+   
     street_map.get_root().html.add_child(folium.Element(legend))
-st.markdown(
-    f"""
-    <style>
-    :root {{
-        --streetlore-primary: {DEFAULT_STREET_COLOR};
-        --streetlore-secondary: #F59E0B;
-        --streetlore-accent: #EC4899;
-        --streetlore-muted: {UNKNOWN_STREET_COLOR};
-    }}
-
-    .stApp {{
-        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    }}
-
-    h1, h2, h3 {{
-        color: #111827;
-    }}
-
-    [data-testid="stSidebar"] {{
-        background-color: #f8fafc;
-        border-right: 1px solid #e5e7eb;
-    }}
-
-    div[data-testid="stMetricValue"],
-    .stCaption {{
-        color: var(--streetlore-primary);
-    }}
-
-    
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 def add_north_arrow(street_map: folium.Map) -> None:
     """Fügt den Nordpfeil aus dem Notebook zur Folium-Karte hinzu."""
@@ -261,59 +218,6 @@ def load_data_from_notebook(notebook_mtime_ns: int) -> pd.DataFrame:
 
     return df
 
-    if "data" not in namespace:
-        st.error("Im Notebook wurde kein DataFrame mit dem Namen `data` gefunden.")
-        st.stop()
-
-    df = namespace["data"]
-    if not isinstance(df, pd.DataFrame):
-        st.error("Die Variable `data` aus dem Notebook ist kein pandas DataFrame.")
-        st.stop()
-
-    df = df.copy()
-
-    #columns umbenennen
-    df = df.rename(
-        columns={
-            "geschlecht": "Geschlecht",
-            "berufsgruppe": "Berufsgruppe",
-            "epoche": "Epoche",
-        }
-    )
-
-    required_columns = [
-        "Strassenname",
-        "Erklärung erste Zeile",
-        "Erklärung zweite Zeile",
-        "Geo Shape",
-        "Geo Point",
-        "Geschlecht",
-        "Berufsgruppe",
-        "Epoche",
-    ]
-    missing_columns = [col for col in required_columns if col not in df.columns]
-
-    if missing_columns:
-        st.error(f"In den Notebook-Daten fehlen diese Spalten: {missing_columns}")
-        st.stop()
-
-    # Falls Erklärung_komplett nicht existiert, aus den beiden Zeilen erzeugen.
-    if "Erklärung_komplett" not in df.columns:
-        z1 = df["Erklärung erste Zeile"].fillna("").astype(str)
-        z2 = df["Erklärung zweite Zeile"].fillna("").astype(str)
-        df["Erklärung_komplett"] = (z1 + " " + z2).str.strip()
-
-    return df
-
-
-#def filters
-def has_active_filters(
-    selected_geschlecht: list[str],
-    selected_berufsgruppe: list[str],
-    selected_epochen: list[str],
-) -> bool:
-   #check if any filter is active
-    return bool(selected_geschlecht or selected_berufsgruppe or selected_epochen)
 
 #change coordinates from json to tuples
 def _geo_shape_to_lines(geo_shape: object) -> list[list[tuple[float, float]]]:
@@ -343,83 +247,36 @@ def _geo_shape_to_lines(geo_shape: object) -> list[list[tuple[float, float]]]:
 
 
 #folium map
-def _get_map_center(df: pd.DataFrame) -> tuple[float, float]:
-   #center of the map in Basel
-    if "Geo Point" not in df.columns:
-        return 47.5596, 7.5886
 
-    points = df["Geo Point"].dropna().astype(str).str.split(",", expand=True)
-    if points.shape[1] < 2:
-        return 47.5596, 7.5886
-
-    lat = pd.to_numeric(points[0].str.strip(), errors="coerce")
-    lon = pd.to_numeric(points[1].str.strip(), errors="coerce")
-
-    if lat.dropna().empty or lon.dropna().empty:
-        return 47.5596, 7.5886
-
-    return float(lat.mean()), float(lon.mean())
-
-
-def build_street_map(
-    df_all: pd.DataFrame,
-    df_filtered: pd.DataFrame,
-    filters_are_active: bool,
-    selected_geschlecht: list[str],
-    selected_berufsgruppe: list[str],
-    selected_epochen: list[str],
-) -> folium.Map:
-    
-    center_lat, center_lon = _get_map_center(df_all)
-
+def build_street_map(df_map: pd.DataFrame, color_dimension: str) -> folium.Map:
     street_map = folium.Map(
-        location=[center_lat, center_lon],
+        location=[47.5596, 7.5886],
         zoom_start=13,
         tiles="CartoDB positron",
         control_scale=True,
     )
 
-    filtered_ids = set(df_filtered.index)
-    color_dimension = _active_color_dimension(
-        selected_geschlecht=selected_geschlecht,
-        selected_berufsgruppe=selected_berufsgruppe,
-        selected_epochen=selected_epochen,
-    )
-
-    for row_id, row in df_all.iterrows():
-        lines = _geo_shape_to_lines(row.get("Geo Shape"))
-        if not lines:
-            continue
-
-        is_match = row_id in filtered_ids
-
-        if filters_are_active:
-            color = _color_for_row(row, color_dimension) if is_match else INACTIVE_STREET_COLOR
-            weight = 5 if is_match else 1.5
-            opacity = 0.95 if is_match else 0.22
-        else:
-            color = _color_for_row(row, color_dimension)
-            weight = 3
-            opacity = 0.82
-
-        popup_html = f"""
-        <b>{escape(str(row.get('Strassenname', 'Unbekannte Strasse')))}</b><br>
-        Geschlecht: {escape(str(row.get('Geschlecht', '')))}<br>
-        Berufsgruppe: {escape(str(row.get('Berufsgruppe', '')))}<br>
-        Epoche: {escape(str(row.get('Epoche', '')))}
-        """
-
-        for line in lines:
+    for _, row in df_map.iterrows():
+        for line in _geo_shape_to_lines(row.get("Geo Shape")):
             folium.PolyLine(
                 locations=line,
-                color=color,
-                weight=weight,
-                opacity=opacity,
-                popup=folium.Popup(popup_html, max_width=350),
+                color=get_street_color(row, color_dimension),
+                weight=4,
+                opacity=0.85,
+                popup=folium.Popup(
+                    f"""
+                    <b>{escape(str(row.get('Strassenname', 'Unbekannte Strasse')))}</b><br>
+                    Geschlecht: {escape(str(row.get('Geschlecht', '')))}<br>
+                    Berufsgruppe: {escape(str(row.get('Berufsgruppe', '')))}<br>
+                    Epoche: {escape(str(row.get('Epoche', '')))}
+                    """,
+                    max_width=350,
+                ),
             ).add_to(street_map)
 
-    add_map_legend(street_map, color_dimension)
+    add_map_legend(street_map)
     add_north_arrow(street_map)
+
     return street_map
 
 # title and description
@@ -496,12 +353,9 @@ filtered_df = apply_filters(
     selected_epochen=selected_epochen,
 )
 
-filters_are_active = has_active_filters(
-    selected_geschlecht=selected_geschlecht,
-    selected_berufsgruppe=selected_berufsgruppe,
-    selected_epochen=selected_epochen,
+filters_are_active = bool(
+    selected_geschlecht or selected_berufsgruppe or selected_epochen
 )
-
 
 #dual button
 control_button = st.segmented_control("", ["Karte", "Statistik"], default="Karte")
@@ -563,24 +417,12 @@ if control_button == "Statistik":
 else:
     st.subheader("Entdecke die Geschichten hinter den Strassennamen auf der Karte")
 
-    color_dimension = _active_color_dimension(
-        selected_geschlecht=selected_geschlecht,
-        selected_berufsgruppe=selected_berufsgruppe,
-        selected_epochen=selected_epochen,
-    )
-    
-    
     street_map = build_street_map(
-        df_all=df,
-        df_filtered=filtered_df,
-        filters_are_active=filters_are_active,
-        selected_geschlecht=selected_geschlecht,
-        selected_berufsgruppe=selected_berufsgruppe,
-        selected_epochen=selected_epochen,
+        df_map=filtered_df,
+        color_dimension=get_color_dimension(),
     )
+
     components.html(street_map._repr_html_(), height=650, scrolling=False)
-
-
 #footer
 st.markdown("""
     <style>
