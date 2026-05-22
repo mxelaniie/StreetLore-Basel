@@ -245,7 +245,7 @@ def _geo_shape_to_lines(geo_shape):
 
 def build_street_map(df_map: pd.DataFrame, color_dimension: str) -> folium.Map:
     street_map = folium.Map(
-        location=[47.5596, 7.5886],
+        location=[47.5556, 7.6154],
         zoom_start=13,
         tiles="CartoDB positron",
         control_scale=True,
@@ -271,6 +271,20 @@ def build_street_map(df_map: pd.DataFrame, color_dimension: str) -> folium.Map:
 
     add_map_legend(street_map)
     add_north_arrow(street_map)
+    
+    poi_layer = folium.FeatureGroup(name="PointsOfInterest", show=False).add_to(street_map)
+
+    folium.Marker(
+        location=(47.552230, 7.587495),
+        tooltip="Balz, Besucheranzahl: 67"
+    ).add_to(poi_layer)
+
+    folium.Marker(
+        location=(47.553476, 7.585683),
+        tooltip="Valhalla"
+    ).add_to(poi_layer)
+
+    folium.LayerControl(collapsed=False).add_to(street_map)
 
     return street_map
 
