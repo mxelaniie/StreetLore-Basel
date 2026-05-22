@@ -371,6 +371,17 @@ def build_street_map(
     selected_epochen: list[str],
 ) -> folium.Map:
     
+    # Farbschema wählen
+    if farb_modus == "geschlecht":
+        farb_zuordnung = FARBEN_GESCHLECHT
+        farb_spalte = "Geschlecht"
+    elif farb_modus == "epoche":
+        farb_zuordnung = FARBEN_EPOCHEN
+        farb_spalte = "Epoche"
+    else:
+        farb_zuordnung = FARBEN_BERUFSGRUPPE
+        farb_spalte = "Berufsgruppe"
+    
     center_lat, center_lon = _get_map_center(df_all)
 
     street_map = folium.Map(
@@ -393,6 +404,8 @@ def build_street_map(
             continue
 
         is_match = row_id in filtered_ids
+        kategorie = str(row.get(farb_spalte, "")).lower() 
+        base_color = farb_zuordnung.get(kategorie, "#999999")
 
         if filters_are_active:
             color = _color_for_row(row, color_dimension) if is_match else INACTIVE_STREET_COLOR
@@ -502,6 +515,13 @@ filters_are_active = has_active_filters(
     selected_berufsgruppe=selected_berufsgruppe,
     selected_epochen=selected_epochen,
 )
+
+if selected_geschlecht and not selected_berufsgruppe and not selected_epochen:
+    farb_modus = "geschlecht"
+elif selected_epochen and not selected_geschlecht and not selected_berufsgruppe:
+    farb_modus = "epoche"
+else:
+    farb_modus = "berufsgruppe"
 
 
 #dual button
